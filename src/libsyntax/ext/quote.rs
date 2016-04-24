@@ -32,6 +32,7 @@ pub mod rt {
     use parse::{self, token, classify};
     use ptr::P;
     use std::rc::Rc;
+    use rustc_int128::*;
 
     use ast::TokenTree;
 
@@ -271,19 +272,19 @@ pub mod rt {
         (signed, $t:ty, $tag:expr) => (
             impl ToTokens for $t {
                 fn to_tokens(&self, cx: &ExtCtxt) -> Vec<TokenTree> {
-                    let val = if *self < 0 {
+                    let val = if self.is_negative() {
                         -self
                     } else {
                         *self
                     };
-                    let lit = ast::LitKind::Int(val as u64, ast::LitIntType::Signed($tag));
+                    let lit = ast::LitKind::Int(val.as_u128(), ast::LitIntType::Signed($tag));
                     let lit = P(ast::Expr {
                         id: ast::DUMMY_NODE_ID,
                         node: ast::ExprKind::Lit(P(dummy_spanned(lit))),
                         span: DUMMY_SP,
                         attrs: None,
                     });
-                    if *self >= 0 {
+                    if !self.is_negative() {
                         return lit.to_tokens(cx);
                     }
                     P(ast::Expr {
@@ -298,7 +299,7 @@ pub mod rt {
         (unsigned, $t:ty, $tag:expr) => (
             impl ToTokens for $t {
                 fn to_tokens(&self, cx: &ExtCtxt) -> Vec<TokenTree> {
-                    let lit = ast::LitKind::Int(*self as u64, ast::LitIntType::Unsigned($tag));
+                    let lit = ast::LitKind::Int(self.as_u128(), ast::LitIntType::Unsigned($tag));
                     dummy_spanned(lit).to_tokens(cx)
                 }
             }
@@ -310,12 +311,14 @@ pub mod rt {
     impl_to_tokens_int! { signed, i16, ast::IntTy::I16 }
     impl_to_tokens_int! { signed, i32, ast::IntTy::I32 }
     impl_to_tokens_int! { signed, i64, ast::IntTy::I64 }
+    impl_to_tokens_int! { signed, i128, ast::IntTy::I128 }
 
     impl_to_tokens_int! { unsigned, usize, ast::UintTy::Us }
     impl_to_tokens_int! { unsigned, u8,   ast::UintTy::U8 }
     impl_to_tokens_int! { unsigned, u16,  ast::UintTy::U16 }
     impl_to_tokens_int! { unsigned, u32,  ast::UintTy::U32 }
     impl_to_tokens_int! { unsigned, u64,  ast::UintTy::U64 }
+    impl_to_tokens_int! { unsigned, u128,  ast::UintTy::U128 }
 
     pub trait ExtParseUtils {
         fn parse_item(&self, s: String) -> P<ast::Item>;

@@ -28,6 +28,7 @@ use parse::token::InternedString;
 use parse::token;
 use ptr::P;
 
+use rustc_int128::*;
 use std::cell::{RefCell, Cell};
 use std::collections::HashSet;
 
@@ -758,6 +759,8 @@ fn int_type_of_word(s: &str) -> Option<IntType> {
         "u32" => Some(UnsignedInt(ast::UintTy::U32)),
         "i64" => Some(SignedInt(ast::IntTy::I64)),
         "u64" => Some(UnsignedInt(ast::UintTy::U64)),
+        "i128" => Some(SignedInt(ast::IntTy::I128)),
+        "u128" => Some(UnsignedInt(ast::UintTy::U128)),
         "isize" => Some(SignedInt(ast::IntTy::Is)),
         "usize" => Some(UnsignedInt(ast::UintTy::Us)),
         _ => None
@@ -805,7 +808,8 @@ impl IntType {
             SignedInt(ast::IntTy::I16) | UnsignedInt(ast::UintTy::U16) |
             SignedInt(ast::IntTy::I32) | UnsignedInt(ast::UintTy::U32) |
             SignedInt(ast::IntTy::I64) | UnsignedInt(ast::UintTy::U64) => true,
-            SignedInt(ast::IntTy::Is) | UnsignedInt(ast::UintTy::Us) => false
+            SignedInt(ast::IntTy::Is) | UnsignedInt(ast::UintTy::Us) |
+            SignedInt(ast::IntTy::I128) | UnsignedInt(ast::UintTy::U128) => false
         }
     }
 }

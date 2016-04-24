@@ -39,6 +39,7 @@ extern crate libc;
 #[macro_use] extern crate log;
 #[macro_use] #[no_link] extern crate rustc_bitflags;
 extern crate rustc_unicode;
+extern crate rustc_int128;
 
 extern crate serialize as rustc_serialize; // used by deriving
 

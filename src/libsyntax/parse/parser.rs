@@ -58,6 +58,7 @@ use print::pprust;
 use ptr::P;
 use parse::PResult;
 
+use rustc_int128::*;
 use std::collections::HashSet;
 use std::mem;
 use std::path::{Path, PathBuf};
@@ -2125,7 +2126,7 @@ impl<'a> Parser<'a> {
     pub fn mk_lit_u32(&mut self, i: u32, attrs: ThinAttributes) -> P<Expr> {
         let span = &self.span;
         let lv_lit = P(codemap::Spanned {
-            node: LitKind::Int(i as u64, ast::LitIntType::Unsigned(UintTy::U32)),
+            node: LitKind::Int(i.as_u128(), ast::LitIntType::Unsigned(UintTy::U32)),
             span: *span
         });
 

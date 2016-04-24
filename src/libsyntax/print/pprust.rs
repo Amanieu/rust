@@ -29,6 +29,7 @@ use print::pp::Breaks::{Consistent, Inconsistent};
 use ptr::P;
 use std_inject;
 
+use rustc_int128::*;
 use std::ascii;
 use std::io::{self, Write, Read};
 use std::iter;
@@ -649,7 +650,7 @@ pub trait PrintState<'a> {
                 match t {
                     ast::LitIntType::Signed(st) => {
                         word(self.writer(),
-                             &st.val_to_string(i as i64))
+                             &st.val_to_string(i.as_i128()))
                     }
                     ast::LitIntType::Unsigned(ut) => {
                         word(self.writer(), &ut.val_to_string(i))
