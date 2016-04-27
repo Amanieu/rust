@@ -357,8 +357,10 @@ impl<T: ?Sized> Clone for Arc<T> {
         // any realistic program.
         //
         // We abort because such a program is incredibly degenerate, and we
-        // don't care to support it.
-        if old_size > MAX_REFCOUNT {
+        // don't care to support it. However we can avoid overflow checking on
+        // 64-bit platforms because overflowing a 64-bit integer would take time
+        // on the order of the age of the universe.
+        if !cfg!(target_pointer_width = "64") && old_size > MAX_REFCOUNT {
             unsafe {
                 abort();
             }
@@ -629,7 +631,7 @@ impl<T: ?Sized> Weak<T> {
             }
 
             // See comments in `Arc::clone` for why we do this (for `mem::forget`).
-            if n > MAX_REFCOUNT {
+            if !cfg!(target_pointer_width = "64") && n > MAX_REFCOUNT {
                 unsafe { abort(); }
             }
 
@@ -672,7 +674,7 @@ impl<T: ?Sized> Clone for Weak<T> {
         let old_size = self.inner().weak.fetch_add(1, Relaxed);
 
         // See comments in Arc::clone() for why we do this (for mem::forget).
-        if old_size > MAX_REFCOUNT {
+        if !cfg!(target_pointer_width = "64") && old_size > MAX_REFCOUNT {
             unsafe {
                 abort();
             }

@@ -861,7 +861,9 @@ impl<T> Weak<T> {
 // what happens -- no real program should ever experience this.
 //
 // This should have negligible overhead since you don't actually need to
-// clone these much in Rust thanks to ownership and move-semantics.
+// clone these much in Rust thanks to ownership and move-semantics. However we
+// can avoid overflow checking on 64-bit platforms because overflowing a 64-bit
+// integer would take time on the order of the age of the universe.
 
 #[doc(hidden)]
 trait RcBoxPtr<T: ?Sized> {
@@ -874,7 +876,12 @@ trait RcBoxPtr<T: ?Sized> {
 
     #[inline]
     fn inc_strong(&self) {
-        self.inner().strong.set(self.strong().checked_add(1).unwrap_or_else(|| unsafe { abort() }));
+        if cfg!(target_pointer_width = "64") {
+            self.inner().strong.set(self.strong() + 1)
+        } else {
+            self.inner().strong.set(self.strong().checked_add(1)
+                                        .unwrap_or_else(|| unsafe { abort() }));
+        }
     }
 
     #[inline]
@@ -889,7 +896,12 @@ trait RcBoxPtr<T: ?Sized> {
 
     #[inline]
     fn inc_weak(&self) {
-        self.inner().weak.set(self.weak().checked_add(1).unwrap_or_else(|| unsafe { abort() }));
+        if cfg!(target_pointer_width = "64") {
+            self.inner().weak.set(self.weak() + 1)
+        } else {
+            self.inner().weak.set(self.weak().checked_add(1)
+                                      .unwrap_or_else(|| unsafe { abort() }));
+        }
     }
 
     #[inline]
