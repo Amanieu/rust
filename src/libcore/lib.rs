@@ -127,6 +127,7 @@
 #![feature(const_transmute)]
 #![feature(reverse_bits)]
 #![feature(non_exhaustive)]
+#![feature(external_doc)]
 
 #[prelude_import]
 #[allow(unused)]

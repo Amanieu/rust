@@ -312,6 +312,7 @@
 #![feature(panic_info_message)]
 #![cfg_attr(stage0, feature(panic_implementation))]
 #![feature(non_exhaustive)]
+#![feature(core_ctypes)]
 
 #![default_lib_allocator]
 
