@@ -15,7 +15,7 @@ macro_rules! cfg_if {
         ( $( $( #[cfg($meta)] $it1)* $( #[cfg(not($meta))] $it2)* )* )
 }
 
-use libc::{c_int, c_void, uintptr_t};
+use core::ffi::{c_int, c_void, uintptr_t};
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone, PartialEq)]

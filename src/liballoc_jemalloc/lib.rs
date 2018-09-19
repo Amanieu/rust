@@ -14,7 +14,7 @@
             reason = "implementation detail of std, does not provide any public API",
             issue = "0")]
 #![feature(core_intrinsics)]
-#![feature(libc)]
+#![feature(core_ctypes)]
 #![feature(linkage)]
 #![cfg_attr(not(stage0), feature(nll))]
 #![feature(staged_api)]
@@ -23,13 +23,11 @@
 #![cfg_attr(not(dummy_jemalloc), feature(allocator_api))]
 #![rustc_alloc_kind = "exe"]
 
-extern crate libc;
-
 #[cfg(not(dummy_jemalloc))]
 pub use contents::*;
 #[cfg(not(dummy_jemalloc))]
 mod contents {
-    use libc::{c_int, c_void, size_t};
+    use core::ffi::{c_int, c_void, size_t};
 
     // Note that the symbols here are prefixed by default on macOS and Windows (we
     // don't explicitly request it), and on Android and DragonFly we explicitly

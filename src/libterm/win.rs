@@ -12,8 +12,7 @@
 
 // FIXME (#13400): this is only a tiny fraction of the Windows console api
 
-extern crate libc;
-
+use std::ffi::c_short;
 use std::io;
 use std::io::prelude::*;
 
@@ -38,11 +37,11 @@ type HANDLE = *mut u8;
 #[allow(non_snake_case)]
 #[repr(C)]
 struct CONSOLE_SCREEN_BUFFER_INFO {
-    dwSize: [libc::c_short; 2],
-    dwCursorPosition: [libc::c_short; 2],
+    dwSize: [c_short; 2],
+    dwCursorPosition: [c_short; 2],
     wAttributes: WORD,
-    srWindow: [libc::c_short; 4],
-    dwMaximumWindowSize: [libc::c_short; 2],
+    srWindow: [c_short; 4],
+    dwMaximumWindowSize: [c_short; 2],
 }
 
 #[allow(non_snake_case)]

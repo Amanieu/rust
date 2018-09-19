@@ -47,7 +47,7 @@
        test(attr(deny(warnings))))]
 #![deny(missing_docs)]
 
-#![cfg_attr(windows, feature(libc))]
+#![cfg_attr(windows, feature(core_ctypes))]
 // Handle rustfmt skips
 #![feature(custom_attribute)]
 #![cfg_attr(not(stage0), feature(nll))]

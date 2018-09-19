@@ -12,7 +12,7 @@
 #![allow(dead_code)]
 #![cfg(windows)]
 
-use libc::{c_long, c_ulong, c_void};
+use core::ffi::{c_long, c_ulong, c_void};
 
 pub type DWORD = c_ulong;
 pub type LONG = c_long;

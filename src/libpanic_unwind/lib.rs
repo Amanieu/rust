@@ -33,7 +33,7 @@
 #![feature(alloc)]
 #![feature(core_intrinsics)]
 #![feature(lang_items)]
-#![feature(libc)]
+#![feature(core_ctypes)]
 #![cfg_attr(not(stage0), feature(nll))]
 #![feature(panic_unwind)]
 #![feature(raw)]
@@ -45,7 +45,6 @@
 #![feature(panic_runtime)]
 
 extern crate alloc;
-extern crate libc;
 #[cfg(not(any(target_env = "msvc", all(windows, target_arch = "x86_64", target_env = "gnu"))))]
 extern crate unwind;
 

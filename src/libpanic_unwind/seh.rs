@@ -63,7 +63,7 @@ use core::mem;
 use core::raw;
 
 use windows as c;
-use libc::{c_int, c_uint};
+use core::ffi::{c_int, c_uint};
 
 // First up, a whole bunch of type definitions. There's a few platform-specific
 // oddities here, and a lot that's just blatantly copied from LLVM. The purpose

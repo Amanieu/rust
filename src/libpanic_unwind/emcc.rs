@@ -21,7 +21,7 @@
 use core::any::Any;
 use core::ptr;
 use alloc::boxed::Box;
-use libc::{self, c_int};
+use core::ffi::{c_void, size_t, c_int};
 use unwind as uw;
 use core::mem;
 
@@ -61,11 +61,11 @@ unsafe extern "C" fn rust_eh_personality(version: c_int,
 }
 
 extern "C" {
-    fn __cxa_allocate_exception(thrown_size: libc::size_t) -> *mut libc::c_void;
-    fn __cxa_free_exception(thrown_exception: *mut libc::c_void);
-    fn __cxa_throw(thrown_exception: *mut libc::c_void,
-                   tinfo: *mut libc::c_void,
-                   dest: *mut libc::c_void);
+    fn __cxa_allocate_exception(thrown_size: size_t) -> *mut c_void;
+    fn __cxa_free_exception(thrown_exception: *mut c_void);
+    fn __cxa_throw(thrown_exception: *mut c_void,
+                   tinfo: *mut c_void,
+                   dest: *mut c_void);
     fn __gxx_personality_v0(version: c_int,
                             actions: uw::_Unwind_Action,
                             exception_class: uw::_Unwind_Exception_Class,

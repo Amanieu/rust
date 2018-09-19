@@ -61,7 +61,7 @@ use core::ptr;
 use alloc::boxed::Box;
 
 use unwind as uw;
-use libc::{c_int, uintptr_t};
+use core::ffi::{c_int, uintptr_t};
 use dwarf::eh::{self, EHContext, EHAction};
 
 #[repr(C)]

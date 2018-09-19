@@ -18,7 +18,7 @@
 #![feature(unwind_attributes)]
 #![feature(static_nobundle)]
 
-#![cfg_attr(not(target_env = "msvc"), feature(libc))]
+#![cfg_attr(not(target_env = "msvc"), feature(core_ctypes))]
 
 #[macro_use]
 mod macros;
@@ -29,7 +29,6 @@ cfg_if! {
     } else if #[cfg(all(target_arch = "wasm32", not(target_os = "emscripten")))] {
         // no unwinder on the system!
     } else {
-        extern crate libc;
         mod libunwind;
         pub use libunwind::*;
     }
