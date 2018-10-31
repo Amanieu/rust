@@ -18,7 +18,7 @@
 use fx::{FxHashMap, FxHashSet};
 
 use std::cell::Cell;
-use std::collections::hash_map::Entry;
+use fx::Entry;
 use std::fmt::Debug;
 use std::hash;
 use std::marker::PhantomData;

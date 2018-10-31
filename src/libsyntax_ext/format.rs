@@ -26,7 +26,7 @@ use errors::Applicability;
 
 use rustc_data_structures::fx::{FxHashMap, FxHashSet};
 use std::borrow::Cow;
-use std::collections::hash_map::Entry;
+use rustc_data_structures::fx::Entry;
 
 #[derive(PartialEq)]
 enum ArgumentType {

@@ -8,6 +8,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-pub use rustc_hash::FxHashMap;
-pub use rustc_hash::FxHashSet;
+use core::hash::BuildHasherDefault;
+pub type FxHashMap<K, V> = hashbrown::HashMap<K, V, BuildHasherDefault<FxHasher>>;
+pub type FxHashSet<K> = hashbrown::HashSet<K, BuildHasherDefault<FxHasher>>;
 pub use rustc_hash::FxHasher;
+pub use hashbrown::hash_map::Entry;

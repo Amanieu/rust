@@ -97,7 +97,7 @@ use symbol::keywords;
 use tokenstream::{DelimSpan, TokenStream};
 
 use rustc_data_structures::fx::FxHashMap;
-use std::collections::hash_map::Entry::{Occupied, Vacant};
+use rustc_data_structures::fx::Entry::{Occupied, Vacant};
 use std::mem;
 use std::ops::{Deref, DerefMut};
 use std::rc::Rc;

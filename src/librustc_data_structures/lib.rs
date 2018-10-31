@@ -51,6 +51,7 @@ extern crate rustc_hash;
 extern crate serialize;
 extern crate graphviz;
 extern crate smallvec;
+extern crate hashbrown;
 
 // See librustc_cratesio_shim/Cargo.toml for a comment explaining this.
 #[allow(unused_extern_crates)]

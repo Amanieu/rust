@@ -29,7 +29,7 @@ use tokenstream::{DelimSpan, TokenStream, TokenTree};
 
 use rustc_data_structures::fx::FxHashMap;
 use std::borrow::Cow;
-use std::collections::hash_map::Entry;
+use rustc_data_structures::fx::Entry;
 
 use rustc_data_structures::sync::Lrc;
 use errors::Applicability;
