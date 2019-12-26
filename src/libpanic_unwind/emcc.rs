@@ -52,10 +52,6 @@ struct Exception {
     data: Option<Box<dyn Any + Send>>,
 }
 
-pub fn payload() -> *mut u8 {
-    ptr::null_mut()
-}
-
 pub unsafe fn cleanup(ptr: *mut u8) -> Box<dyn Any + Send> {
     assert!(!ptr.is_null());
     let adjusted_ptr = __cxa_begin_catch(ptr as *mut libc::c_void) as *mut Exception;

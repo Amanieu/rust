@@ -30,10 +30,8 @@
 #![feature(panic_runtime)]
 
 use alloc::boxed::Box;
-use core::intrinsics;
-use core::mem;
 use core::panic::BoxMeUp;
-use core::raw;
+use core::any::Any;
 
 cfg_if::cfg_if! {
     if #[cfg(target_os = "emscripten")] {
@@ -62,28 +60,17 @@ cfg_if::cfg_if! {
 
 mod dwarf;
 
-// Entry point for catching an exception, implemented using the `try` intrinsic
-// in the compiler.
-//
-// The interaction between the `payload` function and the compiler is pretty
-// hairy and tightly coupled, for more information see the compiler's
-// implementation of this.
+// Payload type used by intrinsics::try
+#[cfg(target_env = "msvc")]
+type PanicPayload = [u64; 2];
+#[cfg(not(target_env = "msvc"))]
+type PanicPayload = *mut u8;
+
+// Extracts the Box<Any> from the platform-specific exception object that was
+// thrown by __rust_start_panic.
 #[no_mangle]
-pub unsafe extern "C" fn __rust_maybe_catch_panic(
-    f: fn(*mut u8),
-    data: *mut u8,
-    data_ptr: *mut usize,
-    vtable_ptr: *mut usize,
-) -> u32 {
-    let mut payload = imp::payload();
-    if intrinsics::r#try(f, data, &mut payload as *mut _ as *mut _) == 0 {
-        0
-    } else {
-        let obj = mem::transmute::<_, raw::TraitObject>(imp::cleanup(payload));
-        *data_ptr = obj.data as usize;
-        *vtable_ptr = obj.vtable as usize;
-        1
-    }
+pub unsafe extern "C" fn __rust_unwrap_caught_panic(payload: PanicPayload) -> *mut (dyn Any + Send) {
+    Box::into_raw(imp::cleanup(payload))
 }
 
 // Entry point for raising an exception, just delegates to the platform-specific
