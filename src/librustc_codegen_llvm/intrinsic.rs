@@ -858,8 +858,8 @@ fn try_intrinsic(
 ) {
     if bx.sess().no_landing_pads() {
         bx.call(func, &[data], None);
-        let ptr_align = bx.tcx().data_layout.pointer_align.abi;
-        bx.store(bx.const_null(bx.type_i8p()), dest, ptr_align);
+        let i32_align = bx.tcx().data_layout.i32_align.abi;
+        bx.store(bx.const_i32(0), dest, i32_align);
     } else if wants_msvc_seh(bx.sess()) {
         codegen_msvc_try(bx, func, data, local_ptr, dest);
     } else {
