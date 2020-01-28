@@ -333,6 +333,7 @@ unsafe fn find_eh_action(
 #[lang = "eh_unwind_resume"]
 #[unwind(allowed)]
 #[naked]
+#[inline(never)]
 unsafe extern "C" fn rust_eh_unwind_resume(_panic_ctx: *mut u8) -> ! {
     // This needs to be a naked function because _Unwind_Resume expects to be
     // called directly from the landing pad. This means that we need to force
