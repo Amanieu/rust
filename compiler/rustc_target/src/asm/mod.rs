@@ -218,6 +218,8 @@ pub enum InlineAsmReg {
     Mips(MipsInlineAsmReg),
     SpirV(SpirVInlineAsmReg),
     Wasm(WasmInlineAsmReg),
+    // Fake register used by rustdoc to support foreign asm!
+    RustdocDummy,
 }
 
 impl InlineAsmReg {
@@ -229,6 +231,7 @@ impl InlineAsmReg {
             Self::RiscV(r) => r.name(),
             Self::Hexagon(r) => r.name(),
             Self::Mips(r) => r.name(),
+            Self::RustdocDummy => "<reg>",
         }
     }
 
@@ -240,6 +243,7 @@ impl InlineAsmReg {
             Self::RiscV(r) => InlineAsmRegClass::RiscV(r.reg_class()),
             Self::Hexagon(r) => InlineAsmRegClass::Hexagon(r.reg_class()),
             Self::Mips(r) => InlineAsmRegClass::Mips(r.reg_class()),
+            Self::RustdocDummy => InlineAsmRegClass::RustdocDummy,
         }
     }
 
@@ -298,6 +302,7 @@ impl InlineAsmReg {
             Self::RiscV(r) => r.emit(out, arch, modifier),
             Self::Hexagon(r) => r.emit(out, arch, modifier),
             Self::Mips(r) => r.emit(out, arch, modifier),
+            Self::RustdocDummy => unreachable!(),
         }
     }
 
@@ -309,6 +314,10 @@ impl InlineAsmReg {
             Self::RiscV(_) => cb(self),
             Self::Hexagon(r) => r.overlapping_regs(|r| cb(Self::Hexagon(r))),
             Self::Mips(_) => cb(self),
+            Self::RustdocDummy => {
+                // This effectively disables the register conflict check since
+                // we don't report RustdocDummy as conflicting with itself.
+            }
         }
     }
 }
@@ -324,6 +333,8 @@ pub enum InlineAsmRegClass {
     Mips(MipsInlineAsmRegClass),
     SpirV(SpirVInlineAsmRegClass),
     Wasm(WasmInlineAsmRegClass),
+    // Fake register class used by rustdoc to support foreign asm!
+    RustdocDummy,
 }
 
 impl InlineAsmRegClass {
@@ -338,6 +349,7 @@ impl InlineAsmRegClass {
             Self::Mips(r) => r.name(),
             Self::SpirV(r) => r.name(),
             Self::Wasm(r) => r.name(),
+            Self::RustdocDummy => rustc_span::symbol::sym::reg,
         }
     }
 
@@ -355,6 +367,7 @@ impl InlineAsmRegClass {
             Self::Mips(r) => r.suggest_class(arch, ty).map(InlineAsmRegClass::Mips),
             Self::SpirV(r) => r.suggest_class(arch, ty).map(InlineAsmRegClass::SpirV),
             Self::Wasm(r) => r.suggest_class(arch, ty).map(InlineAsmRegClass::Wasm),
+            Self::RustdocDummy => None,
         }
     }
 
@@ -379,6 +392,7 @@ impl InlineAsmRegClass {
             Self::Mips(r) => r.suggest_modifier(arch, ty),
             Self::SpirV(r) => r.suggest_modifier(arch, ty),
             Self::Wasm(r) => r.suggest_modifier(arch, ty),
+            Self::RustdocDummy => None,
         }
     }
 
@@ -399,6 +413,7 @@ impl InlineAsmRegClass {
             Self::Mips(r) => r.default_modifier(arch),
             Self::SpirV(r) => r.default_modifier(arch),
             Self::Wasm(r) => r.default_modifier(arch),
+            Self::RustdocDummy => None,
         }
     }
 
@@ -418,6 +433,9 @@ impl InlineAsmRegClass {
             Self::Mips(r) => r.supported_types(arch),
             Self::SpirV(r) => r.supported_types(arch),
             Self::Wasm(r) => r.supported_types(arch),
+            // Rustdoc never gets around to type-checking the asm!, this is just
+            // used to indicate the lack of any dependency on target features.
+            Self::RustdocDummy => &[],
         }
     }
 
@@ -454,6 +472,8 @@ impl InlineAsmRegClass {
             Self::Mips(r) => r.valid_modifiers(arch),
             Self::SpirV(r) => r.valid_modifiers(arch),
             Self::Wasm(r) => r.valid_modifiers(arch),
+            // The modifier check is skipped in the code for rustdoc
+            Self::RustdocDummy => &[],
         }
     }
 }

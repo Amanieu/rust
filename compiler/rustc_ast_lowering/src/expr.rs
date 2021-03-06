@@ -1242,7 +1242,7 @@ impl<'hir> LoweringContext<'_, 'hir> {
     }
 
     fn lower_expr_asm(&mut self, sp: Span, asm: &InlineAsm) -> hir::ExprKind<'hir> {
-        if self.sess.asm_arch.is_none() {
+        if self.sess.asm_arch.is_none() && !self.sess.opts.actually_rustdoc {
             struct_span_err!(self.sess, sp, E0472, "asm! is unsupported on this target").emit();
         }
         if asm.options.contains(InlineAsmOptions::ATT_SYNTAX)
@@ -1250,6 +1250,7 @@ impl<'hir> LoweringContext<'_, 'hir> {
                 self.sess.asm_arch,
                 Some(asm::InlineAsmArch::X86 | asm::InlineAsmArch::X86_64)
             )
+            && !self.sess.opts.actually_rustdoc
         {
             self.sess
                 .struct_span_err(sp, "the `att_syntax` option is only supported on x86")
@@ -1265,6 +1266,14 @@ impl<'hir> LoweringContext<'_, 'hir> {
             .filter_map(|(op, op_sp)| {
                 let lower_reg = |reg| {
                     Some(match reg {
+                        InlineAsmRegOrRegClass::Reg(_) if sess.opts.actually_rustdoc => {
+                            asm::InlineAsmRegOrRegClass::Reg(asm::InlineAsmReg::RustdocDummy)
+                        }
+                        InlineAsmRegOrRegClass::RegClass(_) if sess.opts.actually_rustdoc => {
+                            asm::InlineAsmRegOrRegClass::RegClass(
+                                asm::InlineAsmRegClass::RustdocDummy,
+                            )
+                        }
                         InlineAsmRegOrRegClass::Reg(s) => asm::InlineAsmRegOrRegClass::Reg(
                             asm::InlineAsmReg::parse(
                                 sess.asm_arch?,
@@ -1355,7 +1364,8 @@ impl<'hir> LoweringContext<'_, 'hir> {
                     | hir::InlineAsmOperand::SplitInOut { reg, .. } => {
                         let class = reg.reg_class();
                         let valid_modifiers = class.valid_modifiers(asm_arch);
-                        if !valid_modifiers.contains(&modifier) {
+                        if !valid_modifiers.contains(&modifier) && !self.sess.opts.actually_rustdoc
+                        {
                             let mut err = sess.struct_span_err(
                                 placeholder_span,
                                 "invalid asm template modifier for this register class",
