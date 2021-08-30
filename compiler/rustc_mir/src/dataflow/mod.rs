@@ -6,8 +6,8 @@ use rustc_span::symbol::{sym, Symbol};
 pub(crate) use self::drop_flag_effects::*;
 pub use self::framework::{
     fmt, graphviz, lattice, visit_results, Analysis, AnalysisDomain, Backward, BorrowckFlowState,
-    BorrowckResults, Engine, Forward, GenKill, GenKillAnalysis, JoinSemiLattice, Results,
-    ResultsCursor, ResultsRefCursor, ResultsVisitor, SwitchIntEdgeEffects,
+    BorrowckResults, CallReturnPlaces, Engine, Forward, GenKill, GenKillAnalysis, JoinSemiLattice,
+    Results, ResultsCursor, ResultsRefCursor, ResultsVisitor, SwitchIntEdgeEffects,
 };
 
 use self::move_paths::MoveData;

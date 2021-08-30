@@ -201,6 +201,7 @@ impl<'cx, 'tcx> Visitor<'tcx> for InvalidationGenerator<'cx, 'tcx> {
                 options: _,
                 line_spans: _,
                 destination: _,
+                cleanup: _,
             } => {
                 for op in operands {
                     match *op {

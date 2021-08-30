@@ -1,6 +1,6 @@
 pub use super::*;
 
-use crate::dataflow::{AnalysisDomain, GenKill, GenKillAnalysis};
+use crate::dataflow::{AnalysisDomain, CallReturnPlaces, GenKill, GenKillAnalysis};
 use rustc_middle::mir::visit::Visitor;
 use rustc_middle::mir::*;
 use rustc_middle::ty::{ParamEnv, TyCtxt};
@@ -123,9 +123,7 @@ where
         &self,
         _trans: &mut impl GenKill<Self::Idx>,
         _block: mir::BasicBlock,
-        _func: &mir::Operand<'tcx>,
-        _args: &[mir::Operand<'tcx>],
-        _dest_place: mir::Place<'tcx>,
+        _return_places: CallReturnPlaces<'_, 'tcx>,
     ) {
     }
 }

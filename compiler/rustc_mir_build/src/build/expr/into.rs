@@ -434,6 +434,7 @@ impl<'a, 'tcx> Builder<'a, 'tcx> {
                         } else {
                             Some(destination)
                         },
+                        cleanup: None,
                     },
                 );
                 destination.unit()

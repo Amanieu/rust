@@ -8,7 +8,7 @@ use rustc_index::bit_set::BitSet;
 use crate::borrow_check::{
     places_conflict, BorrowSet, PlaceConflictBias, PlaceExt, RegionInferenceContext, ToRegionVid,
 };
-use crate::dataflow::{self, fmt::DebugWithContext, GenKill};
+use crate::dataflow::{self, fmt::DebugWithContext, CallReturnPlaces, GenKill};
 
 use std::fmt;
 use std::iter;
@@ -341,9 +341,7 @@ impl<'tcx> dataflow::GenKillAnalysis<'tcx> for Borrows<'_, 'tcx> {
         &self,
         _trans: &mut impl GenKill<Self::Idx>,
         _block: mir::BasicBlock,
-        _func: &mir::Operand<'tcx>,
-        _args: &[mir::Operand<'tcx>],
-        _dest_place: mir::Place<'tcx>,
+        _return_places: CallReturnPlaces<'_, 'tcx>,
     ) {
     }
 }

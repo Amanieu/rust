@@ -66,18 +66,18 @@ where
     fn apply_call_return_effect(
         &mut self,
         _block: BasicBlock,
-        _func: &mir::Operand<'tcx>,
-        _args: &[mir::Operand<'tcx>],
-        return_place: mir::Place<'tcx>,
+        return_places: dataflow::CallReturnPlaces<'_, 'tcx>,
     ) {
-        // We cannot reason about another function's internals, so use conservative type-based
-        // qualification for the result of a function call.
-        let return_ty = return_place.ty(self.ccx.body, self.ccx.tcx).ty;
-        let qualif = Q::in_any_value_of_ty(self.ccx, return_ty);
+        return_places.for_each(|place| {
+            // We cannot reason about another function's internals, so use conservative type-based
+            // qualification for the result of a function call.
+            let return_ty = place.ty(self.ccx.body, self.ccx.tcx).ty;
+            let qualif = Q::in_any_value_of_ty(self.ccx, return_ty);
 
-        if !return_place.is_indirect() {
-            self.assign_qualif_direct(&return_place, qualif);
-        }
+            if !place.is_indirect() {
+                self.assign_qualif_direct(&place, qualif);
+            }
+        });
     }
 }
 
@@ -208,10 +208,8 @@ where
         &self,
         state: &mut Self::Domain,
         block: BasicBlock,
-        func: &mir::Operand<'tcx>,
-        args: &[mir::Operand<'tcx>],
-        return_place: mir::Place<'tcx>,
+        return_places: dataflow::CallReturnPlaces<'_, 'tcx>,
     ) {
-        self.transfer_function(state).apply_call_return_effect(block, func, args, return_place)
+        self.transfer_function(state).apply_call_return_effect(block, return_places)
     }
 }

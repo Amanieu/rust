@@ -1007,6 +1007,7 @@ impl<'a, 'tcx, Bx: BuilderMethods<'a, 'tcx>> FunctionCx<'a, 'tcx, Bx> {
                 options,
                 line_spans,
                 destination,
+                cleanup: _, // TODO
             } => {
                 self.codegen_asm_terminator(
                     helper,

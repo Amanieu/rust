@@ -9,7 +9,7 @@ use rustc_graphviz as dot;
 use rustc_middle::mir::{self, BasicBlock, Body, Location};
 
 use super::fmt::{DebugDiffWithAdapter, DebugWithAdapter, DebugWithContext};
-use super::{Analysis, Direction, Results, ResultsRefCursor, ResultsVisitor};
+use super::{Analysis, CallReturnPlaces, Direction, Results, ResultsRefCursor, ResultsVisitor};
 use crate::util::graphviz_safe_def_name;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -231,16 +231,15 @@ where
         // for the basic block itself. That way, we could display terminator-specific effects for
         // backward dataflow analyses as well as effects for `SwitchInt` terminators.
         match terminator.kind {
-            mir::TerminatorKind::Call {
-                destination: Some((return_place, _)),
-                ref func,
-                ref args,
-                ..
-            } => {
+            mir::TerminatorKind::Call { destination: Some((return_place, _)), .. } => {
                 self.write_row(w, "", "(on successful return)", |this, w, fmt| {
                     let state_on_unwind = this.results.get().clone();
                     this.results.apply_custom_effect(|analysis, state| {
-                        analysis.apply_call_return_effect(state, block, func, args, return_place);
+                        analysis.apply_call_return_effect(
+                            state,
+                            block,
+                            CallReturnPlaces::Call(return_place),
+                        );
                     });
 
                     write!(
@@ -272,6 +271,31 @@ where
                         diff = diff_pretty(
                             this.results.get(),
                             &state_on_generator_drop,
+                            this.results.analysis()
+                        ),
+                    )
+                })?;
+            }
+
+            mir::TerminatorKind::InlineAsm { destination: Some(_), ref operands, .. } => {
+                self.write_row(w, "", "(on successful return)", |this, w, fmt| {
+                    let state_on_unwind = this.results.get().clone();
+                    this.results.apply_custom_effect(|analysis, state| {
+                        analysis.apply_call_return_effect(
+                            state,
+                            block,
+                            CallReturnPlaces::InlineAsm(operands),
+                        );
+                    });
+
+                    write!(
+                        w,
+                        r#"<td balign="left" colspan="{colspan}" {fmt} align="left">{diff}</td>"#,
+                        colspan = this.style.num_state_columns(),
+                        fmt = fmt,
+                        diff = diff_pretty(
+                            this.results.get(),
+                            &state_on_unwind,
                             this.results.analysis()
                         ),
                     )

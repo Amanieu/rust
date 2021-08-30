@@ -18,7 +18,7 @@ use super::drop_flag_effects_for_function_entry;
 use super::drop_flag_effects_for_location;
 use super::on_lookup_result_bits;
 use crate::dataflow::drop_flag_effects;
-use crate::dataflow::framework::SwitchIntEdgeEffects;
+use crate::dataflow::framework::{CallReturnPlaces, SwitchIntEdgeEffects};
 
 mod borrowed_locals;
 pub(super) mod borrows;
@@ -335,21 +335,21 @@ impl<'tcx> GenKillAnalysis<'tcx> for MaybeInitializedPlaces<'_, 'tcx> {
         &self,
         trans: &mut impl GenKill<Self::Idx>,
         _block: mir::BasicBlock,
-        _func: &mir::Operand<'tcx>,
-        _args: &[mir::Operand<'tcx>],
-        dest_place: mir::Place<'tcx>,
+        return_places: CallReturnPlaces<'_, 'tcx>,
     ) {
-        // when a call returns successfully, that means we need to set
-        // the bits for that dest_place to 1 (initialized).
-        on_lookup_result_bits(
-            self.tcx,
-            self.body,
-            self.move_data(),
-            self.move_data().rev_lookup.find(dest_place.as_ref()),
-            |mpi| {
-                trans.gen(mpi);
-            },
-        );
+        return_places.for_each(|place| {
+            // when a call returns successfully, that means we need to set
+            // the bits for that dest_place to 1 (initialized).
+            on_lookup_result_bits(
+                self.tcx,
+                self.body,
+                self.move_data(),
+                self.move_data().rev_lookup.find(place.as_ref()),
+                |mpi| {
+                    trans.gen(mpi);
+                },
+            );
+        });
     }
 
     fn switch_int_edge_effects<G: GenKill<Self::Idx>>(
@@ -450,21 +450,21 @@ impl<'tcx> GenKillAnalysis<'tcx> for MaybeUninitializedPlaces<'_, 'tcx> {
         &self,
         trans: &mut impl GenKill<Self::Idx>,
         _block: mir::BasicBlock,
-        _func: &mir::Operand<'tcx>,
-        _args: &[mir::Operand<'tcx>],
-        dest_place: mir::Place<'tcx>,
+        return_places: CallReturnPlaces<'_, 'tcx>,
     ) {
-        // when a call returns successfully, that means we need to set
-        // the bits for that dest_place to 0 (initialized).
-        on_lookup_result_bits(
-            self.tcx,
-            self.body,
-            self.move_data(),
-            self.move_data().rev_lookup.find(dest_place.as_ref()),
-            |mpi| {
-                trans.kill(mpi);
-            },
-        );
+        return_places.for_each(|place| {
+            // when a call returns successfully, that means we need to set
+            // the bits for that dest_place to 0 (initialized).
+            on_lookup_result_bits(
+                self.tcx,
+                self.body,
+                self.move_data(),
+                self.move_data().rev_lookup.find(place.as_ref()),
+                |mpi| {
+                    trans.kill(mpi);
+                },
+            );
+        });
     }
 
     fn switch_int_edge_effects<G: GenKill<Self::Idx>>(
@@ -569,21 +569,21 @@ impl<'tcx> GenKillAnalysis<'tcx> for DefinitelyInitializedPlaces<'_, 'tcx> {
         &self,
         trans: &mut impl GenKill<Self::Idx>,
         _block: mir::BasicBlock,
-        _func: &mir::Operand<'tcx>,
-        _args: &[mir::Operand<'tcx>],
-        dest_place: mir::Place<'tcx>,
+        return_places: CallReturnPlaces<'_, 'tcx>,
     ) {
-        // when a call returns successfully, that means we need to set
-        // the bits for that dest_place to 1 (initialized).
-        on_lookup_result_bits(
-            self.tcx,
-            self.body,
-            self.move_data(),
-            self.move_data().rev_lookup.find(dest_place.as_ref()),
-            |mpi| {
-                trans.gen(mpi);
-            },
-        );
+        return_places.for_each(|place| {
+            // when a call returns successfully, that means we need to set
+            // the bits for that dest_place to 1 (initialized).
+            on_lookup_result_bits(
+                self.tcx,
+                self.body,
+                self.move_data(),
+                self.move_data().rev_lookup.find(place.as_ref()),
+                |mpi| {
+                    trans.gen(mpi);
+                },
+            );
+        });
     }
 }
 
@@ -663,9 +663,7 @@ impl<'tcx> GenKillAnalysis<'tcx> for EverInitializedPlaces<'_, 'tcx> {
         &self,
         trans: &mut impl GenKill<Self::Idx>,
         block: mir::BasicBlock,
-        _func: &mir::Operand<'tcx>,
-        _args: &[mir::Operand<'tcx>],
-        _dest_place: mir::Place<'tcx>,
+        _return_places: CallReturnPlaces<'_, 'tcx>,
     ) {
         let move_data = self.move_data();
         let init_loc_map = &move_data.init_loc_map;
