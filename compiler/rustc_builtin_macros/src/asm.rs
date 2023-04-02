@@ -5,6 +5,7 @@ use rustc_ast::tokenstream::TokenStream;
 use rustc_data_structures::fx::{FxHashMap, FxHashSet};
 use rustc_errors::{Applicability, PResult};
 use rustc_expand::base::{self, *};
+use rustc_expand::expand::AstFragment;
 use rustc_parse::parser::Parser;
 use rustc_parse_format as parse;
 use rustc_session::lint;
@@ -195,7 +196,9 @@ pub fn parse_asm_args<'a>(
             return p.unexpected();
         };
 
+        // Disallow template arguments after any non-template argument is used.
         allow_templates = false;
+
         let span = span_start.to(p.prev_token.span);
         let slot = args.operands.len();
         args.operands.push((op, span));
@@ -492,7 +495,7 @@ fn parse_reg<'a>(
     Ok(result)
 }
 
-fn expand_preparsed_asm(ecx: &mut ExtCtxt<'_>, args: AsmArgs) -> Option<ast::InlineAsm> {
+fn expand_preparsed_asm(ecx: &mut ExtCtxt<'_>, mut args: AsmArgs) -> Option<ast::InlineAsm> {
     let mut template = vec![];
     // Register operands are implicitly used since they are not allowed to be
     // referenced in the template string.
@@ -510,6 +513,29 @@ fn expand_preparsed_asm(ecx: &mut ExtCtxt<'_>, args: AsmArgs) -> Option<ast::Inl
     for (i, template_expr) in args.templates.into_iter().enumerate() {
         if i != 0 {
             template.push(ast::InlineAsmTemplatePiece::String("\n".to_string()));
+        }
+
+        let template_expr =
+            ecx.expander().fully_expand_fragment(AstFragment::Expr(template_expr)).make_expr();
+        if let ast::ExprKind::InlineAsm(asm) = &template_expr.kind {
+            // TODO: Validate nested asm style.
+            template.extend(asm.template.iter().cloned().map(|piece| match piece {
+                ast::InlineAsmTemplatePiece::String(ref s) => {
+                    ast::InlineAsmTemplatePiece::String(s.clone())
+                }
+                ast::InlineAsmTemplatePiece::Placeholder { operand_idx, modifier, span } => {
+                    ast::InlineAsmTemplatePiece::Placeholder {
+                        operand_idx: args.operands.len() + operand_idx,
+                        modifier,
+                        span,
+                    }
+                }
+            }));
+            template_strs.extend(asm.template_strs.iter().cloned());
+            args.operands.extend(asm.operands.iter().cloned());
+            args.clobber_abis.extend(asm.clobber_abis.iter().cloned());
+            line_spans.extend(asm.line_spans.iter().cloned());
+            continue;
         }
 
         let msg = "asm template must be a string literal";
