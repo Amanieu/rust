@@ -12,11 +12,13 @@ pub mod interval;
 
 mod idx;
 mod slice;
+mod union_find;
 mod vec;
 
 pub use idx::{Idx, IntoSliceIdx};
 pub use rustc_index_macros::newtype_index;
 pub use slice::IndexSlice;
+pub use union_find::UnionFind;
 #[doc(no_inline)]
 pub use vec::IndexVec;
 
