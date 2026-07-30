@@ -287,6 +287,7 @@
 #![feature(doc_masked)]
 #![feature(doc_notable_trait)]
 #![feature(dropck_eyepatch)]
+#![feature(edition_redirect)]
 #![feature(exact_div)]
 #![feature(f16)]
 #![feature(f128)]
@@ -508,6 +509,11 @@ extern crate std as realstd;
 // The standard macros that are not built-in to the compiler.
 #[macro_use]
 mod macros;
+
+#[doc = include_str!("../../core/src/macros/panic.md")]
+#[rustc_edition_redirect(before = "2021", target(crate::panic::panic_2015))]
+#[stable(feature = "rust1", since = "1.0.0")]
+pub use core::panic::panic_2021 as panic;
 
 // The runtime entry point and a few unstable public functions used by the
 // compiler

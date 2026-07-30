@@ -924,14 +924,19 @@ impl<'ra, 'tcx> Resolver<'ra, 'tcx> {
             } else {
                 // Turn ambiguity errors for core vs std panic into warnings.
                 // FIXME: Remove with lang team approval.
-                let is_issue_147319_hack = orig_ident_span.edition() <= Edition::Edition2024
+                let is_diagnostic_item = |res: Res, name| {
+                    res.opt_def_id().is_some_and(|def_id| {
+                        !def_id.is_local() && self.tcx.is_diagnostic_item(name, def_id)
+                    })
+                };
+                let is_std_panic = |res| is_diagnostic_item(res, sym::std_panic_2015_macro);
+                let is_core_panic = |res| is_diagnostic_item(res, sym::core_panic_2015_macro);
+                let is_issue_147319_hack = orig_ident_span.edition() < Edition::Edition2021
                     && matches!(ident.name, sym::panic)
                     && matches!(scope, Scope::StdLibPrelude)
                     && matches!(innermost_scope, Scope::ModuleGlobs(_, _))
-                    && ((self.is_specific_builtin_macro(res, sym::std_panic)
-                        && self.is_specific_builtin_macro(innermost_res, sym::core_panic))
-                        || (self.is_specific_builtin_macro(res, sym::core_panic)
-                            && self.is_specific_builtin_macro(innermost_res, sym::std_panic)));
+                    && ((is_std_panic(res) && is_core_panic(innermost_res))
+                        || (is_core_panic(res) && is_std_panic(innermost_res)));
 
                 let warning = if ambig_vis.is_some() {
                     Some(AmbiguityWarning::GlobImport)

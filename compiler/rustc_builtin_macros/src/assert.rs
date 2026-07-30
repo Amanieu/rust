@@ -12,12 +12,27 @@ use rustc_span::{DUMMY_SP, Ident, Span, Symbol, sym};
 use thin_vec::thin_vec;
 
 use crate::diagnostics;
-use crate::edition_panic::use_panic_2021;
-
-pub(crate) fn expand_assert<'cx>(
+pub(crate) fn expand_assert_2015<'cx>(
     cx: &'cx mut ExtCtxt<'_>,
     span: Span,
     tts: TokenStream,
+) -> MacroExpanderResult<'cx> {
+    expand_assert(cx, span, tts, false)
+}
+
+pub(crate) fn expand_assert_2021<'cx>(
+    cx: &'cx mut ExtCtxt<'_>,
+    span: Span,
+    tts: TokenStream,
+) -> MacroExpanderResult<'cx> {
+    expand_assert(cx, span, tts, true)
+}
+
+fn expand_assert<'cx>(
+    cx: &'cx mut ExtCtxt<'_>,
+    span: Span,
+    tts: TokenStream,
+    use_panic_2021: bool,
 ) -> MacroExpanderResult<'cx> {
     let Assert { cond_expr, custom_message } = match parse_assert(cx, span, tts) {
         Ok(assert) => assert,
@@ -31,8 +46,29 @@ pub(crate) fn expand_assert<'cx>(
     // context to pick up whichever is currently in scope.
     let call_site_span = cx.with_call_site_ctxt(span);
 
+    let panic_2015_span = if use_panic_2021 {
+        call_site_span
+    } else {
+        // `assert_2015!` can be invoked by another standard macro such as
+        // `debug_assert_2015!`. Use the first expansion not marked with `edition_panic` so the
+        // generated `panic!` resolves with the edition that applies outside those wrappers.
+        let mut span = span;
+        loop {
+            let expn = span.ctxt().outer_expn_data();
+            if expn
+                .allow_internal_unstable
+                .is_some_and(|features| features.contains(&sym::edition_panic))
+            {
+                span = expn.call_site;
+            } else {
+                break;
+            }
+        }
+        call_site_span.with_ctxt(span.ctxt())
+    };
+
     let panic_path = || {
-        if use_panic_2021(span) {
+        if use_panic_2021 {
             // On edition 2021, we always call `$crate::panic::panic_2021!()`.
             Path {
                 span: call_site_span,
@@ -45,7 +81,7 @@ pub(crate) fn expand_assert<'cx>(
         } else {
             // Before edition 2021, we call `panic!()` unqualified,
             // such that it calls either `std::panic!()` or `core::panic!()`.
-            Path::from_ident(Ident::new(sym::panic, call_site_span))
+            Path::from_ident(Ident::new(sym::panic, panic_2015_span))
         }
     };
 

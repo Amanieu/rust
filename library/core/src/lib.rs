@@ -124,6 +124,7 @@
 #![feature(diagnostic_opaque)]
 #![feature(doc_cfg)]
 #![feature(doc_notable_trait)]
+#![feature(edition_redirect)]
 #![feature(extern_types)]
 #![feature(f16)]
 #![feature(f128)]
@@ -203,6 +204,14 @@ mod macros;
 
 #[stable(feature = "assert_matches", since = "1.96.0")]
 pub use crate::macros::{assert_matches, debug_assert_matches};
+#[doc = include_str!("macros/panic.md")]
+#[rustc_edition_redirect(before = "2021", target(crate::panic::panic_2015))]
+#[stable(feature = "core", since = "1.6.0")]
+pub use crate::panic::panic_2021 as panic;
+#[doc = include_str!("macros/unreachable.md")]
+#[rustc_edition_redirect(before = "2021", target(crate::panic::unreachable_2015))]
+#[stable(feature = "rust1", since = "1.0.0")]
+pub use crate::panic::unreachable_2021 as unreachable;
 
 #[unstable(feature = "derive_from", issue = "144889")]
 /// Unstable module containing the unstable `From` derive macro.

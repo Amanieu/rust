@@ -28,6 +28,31 @@
     issue = "none"
 )]
 
+#[doc(hidden)]
+#[stable(feature = "rust1", since = "1.0.0")]
+#[rustc_builtin_macro(assert_2015)]
+#[rustc_diagnostic_item = "assert_2015_macro"]
+#[allow_internal_unstable(
+    core_intrinsics,
+    panic_internals,
+    edition_panic,
+    generic_assert_internals
+)]
+pub macro assert_2015 {
+    ($cond:expr $(,)?) => {{ /* compiler built-in */ }},
+    ($cond:expr, $($arg:tt)+) => {{ /* compiler built-in */ }},
+}
+
+#[doc(hidden)]
+#[stable(feature = "rust1", since = "1.0.0")]
+#[rustc_diagnostic_item = "debug_assert_2015_macro"]
+#[allow_internal_unstable(edition_panic, panic_internals)]
+pub macro debug_assert_2015($($arg:tt)*) {
+    if $crate::cfg!(debug_assertions) {
+        $crate::panicking::assert_2015!($($arg)*);
+    }
+}
+
 use crate::fmt;
 use crate::intrinsics::const_eval_select;
 use crate::panic::{Location, PanicInfo};

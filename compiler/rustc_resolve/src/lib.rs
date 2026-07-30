@@ -2099,10 +2099,24 @@ impl<'ra, 'tcx> Resolver<'ra, 'tcx> {
 
     fn is_builtin_macro(&self, res: Res) -> bool {
         self.get_macro(res).is_some_and(|ext| ext.builtin_name.is_some())
-    }
-
-    fn is_specific_builtin_macro(&self, res: Res, symbol: Symbol) -> bool {
-        self.get_macro(res).is_some_and(|ext| ext.builtin_name == Some(symbol))
+            || res.opt_def_id().is_some_and(|def_id| {
+                // `panic!` and `unreachable!` used to be builtin macros, which made them available
+                // even under `#![no_implicit_prelude]`. Edition redirects replace their builtin
+                // expanders, but must preserve that name-resolution behavior.
+                // FIXME: Diagnostic items should not affect name resolution. Replace this with a
+                // dedicated marker for macros that are available without the implicit prelude.
+                !def_id.is_local()
+                    && matches!(
+                        self.tcx.get_diagnostic_name(def_id),
+                        Some(
+                            sym::core_panic_2015_macro
+                                | sym::std_panic_2015_macro
+                                | sym::core_panic_2021_macro
+                                | sym::unreachable_2015_macro
+                                | sym::unreachable_2021_macro
+                        )
+                    )
+            })
     }
 
     fn macro_def(&self, mut ctxt: SyntaxContext) -> DefId {

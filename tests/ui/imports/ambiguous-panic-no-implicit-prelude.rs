@@ -14,3 +14,7 @@ fn foo() {
     use m1::*;
     panic!(); //~ERROR: `panic` is ambiguous [E0659]
 }
+
+fn builtin_macros_remain_available() {
+    unreachable!();
+}

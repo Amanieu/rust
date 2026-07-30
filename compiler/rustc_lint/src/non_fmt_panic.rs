@@ -143,7 +143,7 @@ impl<'a, 'b, 'tcx> Diagnostic<'a, ()> for PanicMessageNotLiteral<'b, 'tcx> {
                     .get_diagnostic_item(sym::Debug)
                     .is_some_and(|t| infcx.type_implements_trait(t, [ty], param_env).may_apply());
 
-            let suggest_panic_any = !is_str && panic == Some(sym::std_panic_macro);
+            let suggest_panic_any = !is_str && panic == Some(sym::std_panic_2015_macro);
 
             let fmt_applicability = if suggest_panic_any {
                 // If we can use panic_any, use that as the MachineApplicable suggestion.
@@ -327,7 +327,12 @@ fn panic_call<'tcx>(
 ) -> (Span, Option<Symbol>, Symbol) {
     let mut expn = f.span.ctxt().outer_expn_data();
 
-    let mut panic_macro = None;
+    // An edition redirect expands the selected `panic_2015` target directly, without the
+    // `std::panic!` or `core::panic!` wrapper that used to identify which crate supplied it.
+    let mut panic_macro = expn
+        .macro_def_id
+        .and_then(|id| cx.tcx.get_diagnostic_name(id))
+        .filter(|&name| matches!(name, sym::core_panic_2015_macro | sym::std_panic_2015_macro));
 
     // Unwrap more levels of macro expansion, as panic_2015!()
     // was likely expanded from panic!() and possibly from
@@ -338,11 +343,10 @@ fn panic_call<'tcx>(
         let Some(name) = cx.tcx.get_diagnostic_name(id) else { break };
         if !matches!(
             name,
-            sym::core_panic_macro
-                | sym::std_panic_macro
+            sym::assert_2015_macro
                 | sym::assert_macro
+                | sym::debug_assert_2015_macro
                 | sym::debug_assert_macro
-                | sym::unreachable_macro
         ) {
             break;
         }

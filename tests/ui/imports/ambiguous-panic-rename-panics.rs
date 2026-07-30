@@ -1,4 +1,5 @@
 //@ edition: 2024
+//@ check-pass
 #![crate_type = "lib"]
 
 mod m1 {
@@ -13,5 +14,5 @@ use m2::*;
 fn xx() {
     use m1::*;
 
-    p!(); //~ ERROR: `p` is ambiguous [E0659]
+    p!();
 }

@@ -35,7 +35,6 @@ mod derive;
 mod deriving;
 mod diagnostics;
 mod direct_const_arg;
-mod edition_panic;
 mod eii;
 mod env;
 mod format;
@@ -73,7 +72,8 @@ pub fn register_builtin_macros(resolver: &mut dyn ResolverExpand) {
     register_bang! {
         // tidy-alphabetical-start
         asm: asm::expand_asm,
-        assert: assert::expand_assert,
+        assert: assert::expand_assert_2021,
+        assert_2015: assert::expand_assert_2015,
         cfg: cfg::expand_cfg,
         cfg_select: cfg_select::expand_cfg_select,
         column: source_util::expand_column,
@@ -81,7 +81,6 @@ pub fn register_builtin_macros(resolver: &mut dyn ResolverExpand) {
         concat: concat::expand_concat,
         concat_bytes: concat_bytes::expand_concat_bytes,
         const_format_args: format::expand_format_args,
-        core_panic: edition_panic::expand_panic,
         direct_const_arg: direct_const_arg::expand,
         env: env::expand_env,
         file: source_util::expand_file,
@@ -98,10 +97,8 @@ pub fn register_builtin_macros(resolver: &mut dyn ResolverExpand) {
         naked_asm: asm::expand_naked_asm,
         option_env: env::expand_option_env,
         pattern_type: pattern_type::expand,
-        std_panic: edition_panic::expand_panic,
         stringify: source_util::expand_stringify,
         trace_macros: trace_macros::expand_trace_macros,
-        unreachable: edition_panic::expand_unreachable,
         view_type: view_type::expand,
         // tidy-alphabetical-end
     }

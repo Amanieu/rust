@@ -202,6 +202,7 @@
 #![feature(coroutine_trait)]
 #![feature(decl_macro)]
 #![feature(dropck_eyepatch)]
+#![feature(edition_redirect)]
 #![feature(fundamental)]
 #![feature(intrinsics)]
 #![feature(lang_items)]

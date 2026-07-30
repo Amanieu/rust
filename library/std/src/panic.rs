@@ -209,7 +209,7 @@ impl fmt::Display for PanicHookInfo<'_> {
 }
 
 #[doc(hidden)]
-#[unstable(feature = "edition_panic", issue = "none", reason = "use panic!() instead")]
+#[stable(feature = "rust1", since = "1.0.0")]
 #[allow_internal_unstable(libstd_sys_internals, const_format_args, panic_internals, rt)]
 #[cfg_attr(not(test), rustc_diagnostic_item = "std_panic_2015_macro")]
 #[rustc_macro_transparency = "semiopaque"]

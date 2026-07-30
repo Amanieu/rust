@@ -297,7 +297,9 @@ impl<'a, 'tcx> FnCtxt<'a, 'tcx> {
             matches!(
                 self.tcx.get_diagnostic_name(def_id),
                 Some(
-                    sym::assert_macro
+                    sym::assert_2015_macro
+                        | sym::assert_macro
+                        | sym::debug_assert_2015_macro
                         | sym::debug_assert_macro
                         | sym::assert_eq_macro
                         | sym::assert_ne_macro

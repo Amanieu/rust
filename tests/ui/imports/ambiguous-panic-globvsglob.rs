@@ -1,4 +1,5 @@
 //@ edition: 2024
+//@ check-pass
 #![crate_type = "lib"]
 mod m1 {
     pub use core::prelude::v1::*;
@@ -12,11 +13,6 @@ fn foo() {
     use m1::*;
     use m2::*;
 
-    // I had hoped that this would not produce the globvsglob error because it would never be
-    // resolving `panic` via one of the ambiguous glob imports above but it appears to do so, not
-    // sure why
+    // Both globs resolve to the same edition-specific macro, so this is not ambiguous.
     panic!();
-    //~^ WARN: `panic` is ambiguous [ambiguous_panic_imports]
-    //~| WARN: this was previously accepted by the compiler
-    //~| ERROR: `panic` is ambiguous
 }
