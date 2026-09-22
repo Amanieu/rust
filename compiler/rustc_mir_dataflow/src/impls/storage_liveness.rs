@@ -250,6 +250,9 @@ impl<'tcx> Analysis<'tcx> for MaybeRequiresStorage {
         MaybeBorrowedLocals::gen_terminator(state, terminator);
 
         match &terminator.kind {
+            // We gen the call destination here because it needs storage for the
+            // entire duration of the call. This storage remains live in both
+            // the normal return and the unwind paths.
             TerminatorKind::Call { destination, .. } => {
                 state.gen_(destination.local);
             }
@@ -298,40 +301,9 @@ impl<'tcx> Analysis<'tcx> for MaybeRequiresStorage {
     fn apply_primary_terminator_effect(
         &self,
         state: &mut Self::Domain,
-        terminator: &Terminator<'tcx>,
+        _terminator: &Terminator<'tcx>,
         loc: Location,
     ) {
-        match terminator.kind {
-            // For call terminators the destination requires storage for the call
-            // and after the call returns successfully, but not after a panic.
-            // Since `propagate_call_unwind` doesn't exist, we have to kill the
-            // destination here, and then gen it again in `call_return_effect`.
-            TerminatorKind::Call { destination, .. } => {
-                state.kill(destination.local);
-            }
-
-            // The same applies to InlineAsm outputs.
-            TerminatorKind::InlineAsm { ref operands, .. } => {
-                CallReturnPlaces::InlineAsm(operands).for_each(|place| state.kill(place.local));
-            }
-
-            // Nothing to do for these. Match exhaustively so this fails to compile when new
-            // variants are added.
-            TerminatorKind::Yield { .. }
-            | TerminatorKind::UnwindTerminate(_)
-            | TerminatorKind::Assert { .. }
-            | TerminatorKind::Drop { .. }
-            | TerminatorKind::FalseEdge { .. }
-            | TerminatorKind::FalseUnwind { .. }
-            | TerminatorKind::CoroutineDrop
-            | TerminatorKind::Goto { .. }
-            | TerminatorKind::UnwindResume
-            | TerminatorKind::Return
-            | TerminatorKind::TailCall { .. }
-            | TerminatorKind::SwitchInt { .. }
-            | TerminatorKind::Unreachable => {}
-        }
-
         self.check_for_move(state, loc);
     }
 
